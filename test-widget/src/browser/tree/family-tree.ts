@@ -6,6 +6,9 @@ import {
   TreeNode
 } from "@theia/core/lib/browser";
 
+import { injectable } from "inversify";
+
+@injectable()
 export default class FamilyTree extends TreeImpl {
   async resolveChildren(parent: CompositeTreeNode): Promise<TreeNode[]> {
     if (FamilyMemberNode.is(parent)) {

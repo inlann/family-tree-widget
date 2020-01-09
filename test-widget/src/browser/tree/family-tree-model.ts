@@ -1,5 +1,6 @@
 import { TreeModelImpl } from "@theia/core/lib/browser";
 
-export class FamilyTreeModel extends TreeModelImpl {
-    
-}
+import { injectable } from "inversify";
+
+@injectable()
+export class FamilyTreeModel extends TreeModelImpl {}

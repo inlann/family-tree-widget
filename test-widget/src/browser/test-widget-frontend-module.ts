@@ -1,4 +1,8 @@
-import { bindViewContribution, FrontendApplicationContribution, WidgetFactory } from "@theia/core/lib/browser";
+import {
+  bindViewContribution,
+  FrontendApplicationContribution,
+  WidgetFactory
+} from "@theia/core/lib/browser";
 import { ContainerModule } from "inversify";
 import "../../src/browser/style/index.css";
 // import "../../src/browser/welcome/welcome.css";
@@ -28,8 +32,6 @@ export default new ContainerModule(bind => {
   //   createWidget: () => context.container.get<WelcomeWidget>(WelcomeWidget)
   // }));
   // bind(WelcomeDataProvider).to(WelcomeDataProviderImpl).inSingletonScope;
-
-  // bind(LabelProviderContribution).to(TestLabelContribution);
 
   bindViewContribution(bind, FamilyTreeWidgetContribution);
   bind(FamilyTreeWidget).toSelf();

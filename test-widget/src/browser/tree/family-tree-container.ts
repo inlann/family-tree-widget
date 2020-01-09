@@ -1,8 +1,17 @@
-import { createTreeContainer, Tree, TreeImpl, TreeModel, TreeModelImpl, TreeWidget } from "@theia/core/lib/browser";
+import {
+  createTreeContainer,
+  Tree,
+  TreeImpl,
+  TreeModel,
+  TreeModelImpl,
+  TreeWidget,
+  LabelProviderContribution
+} from "@theia/core/lib/browser";
 import { interfaces } from "inversify";
 import FamilyTree from "./family-tree";
 import { FamilyTreeModel } from "./family-tree-model";
 import { FamilyTreeWidget } from "./family-tree-widget";
+import { FamilyTreeLabelProvider } from "./family-tree-label-provider";
 
 export function createFamilyTreeWidget(
   parent: interfaces.Container
@@ -19,6 +28,8 @@ export function createFamilyTreeWidget(
 
   child.unbind(TreeWidget);
   child.bind(FamilyTreeWidget).toSelf();
+
+  child.bind(LabelProviderContribution).to(FamilyTreeLabelProvider);
 
   return child.get(FamilyTreeWidget);
 }
