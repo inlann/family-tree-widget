@@ -1,63 +1,87 @@
-import { CompositeTreeNode, ContextMenuRenderer, TreeProps, TreeWidget } from "@theia/core/lib/browser";
-import { inject, injectable, postConstruct } from "inversify";
-import { FamilyMember, FamilyMemberNode } from "./family-tree";
-import { FamilyTreeModel } from "./family-tree-model";
+import {
+  ContextMenuRenderer,
+  TreeModel,
+  TreeProps,
+  TreeWidget,
+  TreeNode,
+  ExpandableTreeNode
+} from "@theia/core/lib/browser";
+import { inject, injectable } from "inversify";
+import { FamilyRootNode, MemberNode } from "./family-tree";
 
 @injectable()
 export class FamilyTreeWidget extends TreeWidget {
-  static readonly ID = "family-tree:widget";
-  static readonly LABEL = "Family";
+  static readonly ID = "family-tree-widget";
+  static readonly LABEL = "Family Tree";
 
   constructor(
     @inject(TreeProps) readonly props: TreeProps,
-    @inject(FamilyTreeModel) readonly model: FamilyTreeModel,
+    @inject(TreeModel) readonly model: TreeModel,
     @inject(ContextMenuRenderer) contextMenuRenderer: ContextMenuRenderer
   ) {
     super(props, model, contextMenuRenderer);
-    const members: FamilyMember[] = [
-      {
-        name: "member 1",
-        children: [
-          {
-            name: "child1",
-            children: []
-          },
-          {
-            name: "child2",
-            children: []
-          }
-        ]
-      },
-      {
-        name: "member 2",
-        children: [
-          {
-            name: "child3",
-            children: []
-          },
-          {
-            name: "child4",
-            children: []
-          }
-        ]
-      }
-    ];
-    this.model.root = {
-      id: "family-tree-root",
-      name: "Family Tree Root",
-      children: members.map(member => FamilyMemberNode.toNode(member)),
-      visible: true,
-      parent: undefined
-    } as CompositeTreeNode;
+
+    this.title.label = FamilyTreeWidget.LABEL;
+    this.id = FamilyTreeWidget.ID;
+
+    const family: Family = {
+      name: "Vestrit",
+      members: [
+        {
+          firstName: "Ephron",
+          nickName: "Ephy",
+          children: [
+            {
+              firstName: "Keffria",
+              nickName: "Keff",
+              children: [
+                {
+                  firstName: "Wintrow",
+                  nickName: "Win"
+                },
+                {
+                  firstName: "Malta",
+                  nickName: "Ederling Queen",
+                  children: [
+                    {
+                      firstName: "Ephron Bendir",
+                      nickName: "Ben"
+                    }
+                  ]
+                },
+                {
+                  firstName: "Selden",
+                  nickName: "Ederling Prince"
+                }
+              ]
+            },
+            {
+              firstName: "Althea",
+              nickName: "Alth"
+            }
+          ]
+        }
+      ]
+    };
+
+    const root: FamilyRootNode = {
+      id: "family-root",
+      name: "family-root",
+      visible: false,
+      parent: undefined,
+      children: [],
+      family
+    };
+
+    this.model.root = root;
   }
 
-  @postConstruct()
-  protected async init(): Promise<void> {
-    this.id = FamilyTreeWidget.ID;
-    this.title.label = FamilyTreeWidget.LABEL;
-    this.title.caption = FamilyTreeWidget.LABEL;
-    this.title.closable = true;
-    this.title.iconClass = "fa fa-window-maximize"; // example widget icon.
-    this.update();
+  protected isExpandable(node: TreeNode): node is ExpandableTreeNode {
+    if (FamilyRootNode.is(node)) return true;
+
+    if (MemberNode.is(node) && node.member.children)
+      return node.member.children.length > 0;
+
+    return false;
   }
 }

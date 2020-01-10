@@ -1,58 +1,63 @@
 import {
-  CompositeTreeNode,
-  ExpandableTreeNode,
-  SelectableTreeNode,
   TreeImpl,
-  TreeNode
+  CompositeTreeNode,
+  TreeNode,
+  ExpandableTreeNode,
+  SelectableTreeNode
 } from "@theia/core/lib/browser";
-
 import { injectable } from "inversify";
 
 @injectable()
-export default class FamilyTree extends TreeImpl {
-  async resolveChildren(parent: CompositeTreeNode): Promise<TreeNode[]> {
-    if (FamilyMemberNode.is(parent)) {
-      const memberNode = parent as FamilyMemberNode;
-
-      if (!memberNode.children) return [];
-      return memberNode.familyMember.children.map(child =>
-        FamilyMemberNode.toNode(child, parent)
+export class FamilyTree extends TreeImpl {
+  protected resolveChildren(parent: CompositeTreeNode): Promise<TreeNode[]> {
+    if (FamilyRootNode.is(parent)) {
+      return Promise.resolve(
+        parent.family.members.map(m => this.makeMemberNode(m))
       );
     }
-    return Array.from(parent.children);
-  }
-}
 
-export interface FamilyMember {
-  name: string;
-  children: FamilyMember[];
-}
+    if (MemberNode.is(parent) && parent.children) {
+      return Promise.resolve(
+        parent.member.children?.map(m => this.makeMemberNode(m)) || []
+      );
+    }
 
-export interface FamilyMemberNode
-  extends SelectableTreeNode,
-    ExpandableTreeNode {
-  familyMember: FamilyMember;
-}
-
-export namespace FamilyMemberNode {
-  export function is(node: object | undefined): node is FamilyMemberNode {
-    return !!node && "familyMember" in node;
+    return Promise.resolve(Array.from(parent.children));
   }
 
-  export function toNode(
-    member: FamilyMember,
-    parent: CompositeTreeNode | undefined = undefined
-  ): FamilyMemberNode {
-    const node: FamilyMemberNode = {
-      id: member.name,
-      name: member.name,
-      familyMember: member,
-      selected: false,
-      visible: true,
+  makeMemberNode(m: Member) {
+    const node: MemberNode = {
+      id: m.firstName + m.nickName,
+      name: `${m.firstName} (${m.nickName})`,
+      parent: undefined,
       expanded: false,
+      selected: false,
       children: [],
-      parent
+      member: m
     };
     return node;
+  }
+}
+
+export interface FamilyRootNode extends CompositeTreeNode {
+  family: Family;
+}
+
+export namespace FamilyRootNode {
+  export function is(node: object): node is FamilyRootNode {
+    return !!node && "family" in node;
+  }
+}
+
+export interface MemberNode
+  extends CompositeTreeNode,
+    ExpandableTreeNode,
+    SelectableTreeNode {
+  member: Member;
+}
+
+export namespace MemberNode {
+  export function is(node: object): node is MemberNode {
+    return !!node && "member" in node;
   }
 }
